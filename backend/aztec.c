@@ -25,6 +25,9 @@
 #include "common.h"
 #include "aztec.h"
 #include "reedsol.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 /**
  * Shorten the string by one character
@@ -56,8 +59,16 @@ int aztec_text_process(uint8_t source[], const unsigned int src_len, char binary
 {
 	int bytes;
 	int curtable, newtable, lasttable, chartype, maplength, blocks, debug;
-	int charmap[src_len * 2], typemap[src_len * 2];
-	int blockmap[2][src_len];
+#ifndef _MSC_VER
+	int charmap[ustrlen(source) * 2], typemap[ustrlen(source) * 2];
+	int blockmap[2][ustrlen(source)];
+#else
+        int* charmap = (int*)_alloca((ustrlen(source) * 2) * sizeof(int));
+        int* typemap = (int*)_alloca((ustrlen(source) * 2) * sizeof(int));
+        int* blockmap[2];
+        blockmap[0] = (int*)_alloca(ustrlen(source) * sizeof(int));
+        blockmap[1] = (int*)_alloca(ustrlen(source) * sizeof(int));
+#endif
 	/* Lookup input string in encoding table */
 	maplength = 0;
 	debug = 0;
@@ -640,9 +651,11 @@ int aztec(struct zint_symbol *symbol, uint8_t source[], int length)
 	int remainder, padbits, count, gs1, adjustment_size;
 	int debug = 0, reader = 0;
 	int comp_loop = 4;
-
-        uint8_t local_source[length + 1];
-
+#ifndef _MSC_VER
+	uint8_t local_source[length + 1];
+#else
+	uint8_t* local_source = (uint8_t*)_alloca(length + 1);
+#endif
 	memset(binary_string,0,20000);
 	memset(adjusted_string,0,20000);
 
@@ -965,7 +978,12 @@ int aztec(struct zint_symbol *symbol, uint8_t source[], int length)
 		printf("    (%d data words, %d ecc words)\n", data_blocks, ecc_blocks);
 	}
 
+#ifndef _MSC_VER
 	unsigned int data_part[data_blocks + 3], ecc_part[ecc_blocks + 3];
+#else
+	unsigned int* data_part = (unsigned int*)_alloca((data_blocks + 3) * sizeof(unsigned int));
+	unsigned int* ecc_part = (unsigned int*)_alloca((ecc_blocks + 3) * sizeof(unsigned int));
+#endif
 	/* Copy across data into separate integers */
 	memset(data_part,0,(data_blocks + 2)*sizeof(int));
 	memset(ecc_part,0,(ecc_blocks + 2)*sizeof(int));

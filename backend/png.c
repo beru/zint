@@ -704,8 +704,11 @@ int png_plot(struct zint_symbol *symbol, int rotate_angle, int data_type)
 	int error_number;
 	int default_text_posn;
 	int next_yposn;
+#ifndef _MSC_VER
 	uint8_t local_text[ustrlen(symbol->text) + 1];
-
+#else
+	uint8_t* local_text = (uint8_t*)_alloca(ustrlen(symbol->text) + 1);
+#endif
 	if(symbol->show_hrt != 0) {
 		to_latin1(symbol->text, local_text);
 	} else {

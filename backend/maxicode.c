@@ -532,9 +532,11 @@ int maxicode(struct zint_symbol *symbol, uint8_t source[], int length)
 	int i, j, block, bit, mode, countrycode = 0, service = 0, lp = 0;
 	int bit_pattern[7], internal_error = 0, eclen, error_number;
 	char postcode[12], countrystr[4], servicestr[4];
-
-        uint8_t local_source[length + 1];
-
+#ifndef _MSC_VER
+	uint8_t local_source[length + 1];
+#else
+	uint8_t* local_source = (uint8_t*)_alloca(length + 1);
+#endif
 	mode = symbol->option_1;
 	strcpy(postcode, "");
 	strcpy(countrystr, "");

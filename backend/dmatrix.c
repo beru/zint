@@ -34,6 +34,9 @@
 #include "reedsol.h"
 #include "common.h"
 #include "dmatrix.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 // Annex M placement alorithm low level
 static void ecc200placementbit(int *array, int NR, int NC, int r, int c, int p, char b)
@@ -337,8 +340,11 @@ int dm200encode(struct zint_symbol *symbol, uint8_t source[], uint8_t target[], 
 	int x12_buffer[6], x12_p;
 	int edifact_buffer[8], edifact_p;
 	int debug = 0;
-        char binary[2 * inputlen];
-
+#ifndef _MSC_VER
+	char binary[2 * inputlen];
+#else
+	char* binary = (char*)_alloca(2 * inputlen);
+#endif
 	sp = 0;
 	tp = 0;
 	memset(c40_buffer, 0, 6);

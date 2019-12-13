@@ -462,9 +462,11 @@ int reduced_charset(struct zint_symbol *symbol, uint8_t *source, int length)
 {
 	/* These are the "norm" standards which only support Latin-1 at most */
 	int error_number = 0;
-
+#ifndef _MSC_VER
 	uint8_t preprocessed[length + 1];
-
+#else
+	uint8_t* preprocessed = (uint8_t*)_alloca(length + 1);
+#endif
 	if(symbol->symbology == BARCODE_CODE16K) {
 		symbol->whitespace_width = 16;
 		symbol->border_width = 2;
@@ -591,9 +593,11 @@ int ZBarcode_Encode(struct zint_symbol *symbol, uint8_t *source, int length)
 	if(strcmp(symbol->outfile, "") == 0) {
 		strcpy(symbol->outfile, "out.png");
 	}
-
-        uint8_t local_source[length + 1];
-
+#ifndef _MSC_VER
+	uint8_t local_source[length + 1];
+#else
+	uint8_t* local_source = (uint8_t*)_alloca(length + 1);
+#endif
 	/* First check the symbology field */
 	if(symbol->symbology < 1) { strcpy(symbol->errtxt, "Symbology out of range, using Code 128"); symbol->symbology = BARCODE_CODE128; error_number = ZWARN_INVALID_OPTION; }
 

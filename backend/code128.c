@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include "common.h"
 #include "gs1.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 #define TRUE 1
 #define FALSE 0
@@ -626,7 +629,11 @@ int ean_128(struct zint_symbol *symbol, uint8_t source[], int length)
 	float glyph_count;
 	char dest[1000];
 	int separator_row, linkage_flag, c_count;
-        char reduced[length + 1];
+#ifndef _MSC_VER
+	char reduced[length + 1];
+#else
+	char* reduced = (char*)_alloca(length + 1);
+#endif
 	error_number = 0;
 	strcpy(dest, "");
 	linkage_flag = 0;

@@ -23,6 +23,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "common.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 const char *C25MatrixTable[10] = {"113311", "311131", "131131", "331111", "113131", "313111",
 	"133111", "111331", "311311", "131311"};
@@ -176,7 +179,11 @@ int interleaved_two_of_five(struct zint_symbol *symbol, uint8_t source[], int le
 
 	int error_number;
 	char bars[7], spaces[7], mixed[14], dest[1000];
+#ifndef _MSC_VER
 	uint8_t temp[length + 2];
+#else
+	uint8_t* temp = (uint8_t*)_alloca(length + 2);
+#endif
 
 	error_number = 0;
 

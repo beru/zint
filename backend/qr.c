@@ -25,6 +25,9 @@
 #include "sjis.h"
 #include "qr.h"
 #include "reedsol.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 int in_alpha(int glyph) {
 	/* Returns true if input glyph is in the Alphanumeric set */
@@ -162,8 +165,11 @@ void qr_binary(int datastream[], int version, int target_binlen, char mode[], in
 	char data_block, padbits;
 	int current_binlen, current_bytes;
 	int toggle, percent;
-
+#ifndef _MSC_VER
 	char binary[est_binlen + 12];
+#else
+	char* binary = (char*)_alloca(est_binlen + 12);
+#endif
 	strcpy(binary, "");
 
 	if(gs1) {
@@ -438,11 +444,17 @@ void add_ecc(int fullstream[], int datastream[], int version, int data_cw, int b
 	int ecc_block_length = ecc_cw / blocks;
 	int i, j, length_this_block, posn, debug = 0;
 
-
+#ifndef _MSC_VER
 	uint8_t data_block[short_data_block_length + 2];
 	uint8_t ecc_block[ecc_block_length + 2];
 	int interleaved_data[data_cw + 2];
 	int interleaved_ecc[ecc_cw + 2];
+#else
+	uint8_t* data_block = (uint8_t*)_alloca(short_data_block_length + 2);
+	uint8_t* ecc_block = (uint8_t*)_alloca(ecc_block_length + 2);
+	int* interleaved_data = (int*)_alloca(sizeof(int) * (data_cw + 2));
+	int* interleaved_ecc = (int*)_alloca(sizeof(int) * (ecc_cw + 2));
+#endif
 
 	posn = 0;
 
@@ -701,9 +713,11 @@ int evaluate(uint8_t *grid, int size, int pattern)
 	int p;
 	int dark_mods;
 	int percentage, k;
-
+#ifndef _MSC_VER
 	char local[size * size];
-
+#else
+	char* local = (char*)_alloca(size * size);
+#endif
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			switch(pattern) {
@@ -826,10 +840,13 @@ int apply_bitmask(uint8_t *grid, int size)
 	int pattern, penalty[8];
 	int best_val, best_pattern;
 	int bit;
-
+#ifndef _MSC_VER
 	uint8_t mask[size * size];
 	uint8_t eval[size * size];
-
+#else
+	uint8_t* mask = (uint8_t*)_alloca(size * size);
+	uint8_t* eval = (uint8_t*)_alloca(size * size);
+#endif
 	/* Perform data masking */
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
@@ -956,11 +973,15 @@ int qr_code(struct zint_symbol *symbol, uint8_t source[], int length)
 	int error_number, glyph, est_binlen;
 	int ecc_level, autosize, version, max_cw, target_binlen, blocks, size;
 	int bitmask, gs1;
-
+#ifndef _MSC_VER
 	int utfdata[length + 1];
 	int jisdata[length + 1];
 	char mode[length + 1];
-
+#else
+	int* utfdata = (int*)_alloca(sizeof(int) * (length + 1));
+	int* jisdata = (int*)_alloca(sizeof(int) * (length + 1));
+	char* mode = (char*)_alloca(length + 1);
+#endif
 	gs1 = (symbol->input_mode == GS1_MODE);
 
 	switch(symbol->input_mode) {
@@ -1062,15 +1083,22 @@ int qr_code(struct zint_symbol *symbol, uint8_t source[], int length)
 		case LEVEL_Q: target_binlen = qr_data_codewords_Q[version - 1]; blocks = qr_blocks_Q[version - 1]; break;
 		case LEVEL_H: target_binlen = qr_data_codewords_H[version - 1]; blocks = qr_blocks_H[version - 1]; break;
 	}
-
+#ifndef _MSC_VER
 	int datastream[target_binlen + 1];
 	int fullstream[qr_total_codewords[version - 1] + 1];
-
+#else
+	int* datastream = (int*)_alloca(sizeof(int) * (target_binlen + 1));
+	int* fullstream = (int*)_alloca(sizeof(int) * (qr_total_codewords[version - 1] + 1));
+#endif
 	qr_binary(datastream, version, target_binlen, mode, jisdata, length, gs1, est_binlen);
 	add_ecc(fullstream, datastream, version, target_binlen, blocks);
 
 	size = qr_sizes[version - 1];
+#ifndef _MSC_VER
 	uint8_t grid[size * size];
+#else
+	uint8_t* grid = (uint8_t*)_alloca(size * size);
+#endif
 
 	for (int i = 0; i < size; i++) {
 		for(int j = 0; j < size; j++) {
@@ -1849,10 +1877,13 @@ int micro_apply_bitmask(uint8_t *grid, int size)
 	int pattern, value[8];
 	int best_val, best_pattern;
 	int bit;
-
+#ifndef _MSC_VER
 	uint8_t mask[size * size];
 	uint8_t eval[size * size];
-
+#else
+	uint8_t* mask = (uint8_t*)_alloca(size * size);
+	uint8_t* eval = (uint8_t*)_alloca(size * size);
+#endif
 	/* Perform data masking */
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
@@ -2104,8 +2135,11 @@ int microqr(struct zint_symbol *symbol, uint8_t source[], int length)
 	}
 
 	size = micro_qr_sizes[version];
+#ifndef _MSC_VER
 	uint8_t grid[size * size];
-
+#else
+	uint8_t* grid = (uint8_t*)_alloca(size * size);
+#endif
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < size; j++) {
 			grid[(i * size) + j] = 0;

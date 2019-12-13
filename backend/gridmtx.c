@@ -28,6 +28,9 @@
 #include "reedsol.h"
 #include "gridmtx.h"
 #include "gb2312.h"
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 
 int number_lat(int gbdata[], int length, int position)
 {
@@ -787,10 +790,13 @@ void place_layer_id(char* grid, int size, int layers, int modules, int ecc_level
 	/* Place the layer ID into each macromodule */
 
 	int i, j, layer, start, stop;
-
+#ifndef _MSC_VER
 	int layerid[layers + 1];
 	int id[modules * modules];
-
+#else
+	int* layerid = (int*)_alloca(sizeof(int) * (layers + 1));
+	int* id = (int*)_alloca(sizeof(int) * (modules * modules));
+#endif
 	/* Calculate Layer IDs */
 	for(i = 0; i <= layers; i++) {
 		if(ecc_level == 1) {
@@ -841,10 +847,13 @@ int grid_matrix(struct zint_symbol *symbol, uint8_t source[], int length)
 	char binary[9300];
 	int data_cw, input_latch = 0;
 	int word[1460], data_max, reader = 0;
-
+#ifndef _MSC_VER
 	int utfdata[length + 1];
 	int gbdata[length + 1];
-
+#else
+	int* utfdata = (int*)_alloca(sizeof(int) * (length + 1));
+	int* gbdata = (int*)_alloca(sizeof(int) * (length + 1));
+#endif
 	for(i = 0; i < 1460; i++) {
 		word[i] = 0;
 	}
@@ -960,9 +969,11 @@ int grid_matrix(struct zint_symbol *symbol, uint8_t source[], int length)
 	gm_add_ecc(binary, data_cw, layers, ecc_level, word);
 	size = 6 + (layers * 12);
 	modules = 1 + (layers * 2);
-
+#ifndef _MSC_VER
 	char grid[size * size];
-
+#else
+	char* grid = (char*)_alloca(size * size);
+#endif
 	for(x = 0; x < size; x++) {
 		for(y = 0; y < size; y++) {
 			grid[(y * size) + x] = '0';

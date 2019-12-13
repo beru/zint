@@ -24,9 +24,14 @@
 #include <string.h>
 #include <getopt.h>
 #include <zint.h>
+#ifdef _MSC_VER
+#include <malloc.h> 
+#endif
 #define NESET "0123456789"
 
+#ifndef _MSC_VER
 inline static void die(const char *s) __attribute__((noreturn));
+#endif
 
 void die(const char *s)
 {
@@ -120,7 +125,11 @@ int escape_char_process(struct zint_symbol *my_symbol, uint8_t input_string[], i
 {
 	int error_number;
 	int i, j;
+#ifndef _MSC_VER
 	uint8_t escaped_string[length + 1];
+#else
+	uint8_t* escaped_string = (uint8_t*)_alloca(length + 1);
+#endif
 
 	i = 0;
 	j = 0;
@@ -156,6 +165,7 @@ int escape_char_process(struct zint_symbol *my_symbol, uint8_t input_string[], i
 	return error_number;
 }
 
+static
 char itoc(int source)
 { /* Converts an integer value to its hexadecimal character */
 	if ((source >= 0) && (source <= 9)) {
@@ -164,6 +174,7 @@ char itoc(int source)
 		return ('A' + (source - 10)); }
 }
 
+static
 void concat(char dest[], const char source[])
 { /* Concatinates dest[] with the contents of source[], copying /0 as well */
 	unsigned int i, j, n;
